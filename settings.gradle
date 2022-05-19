@@ -1,0 +1,2 @@
+include ':dronelink_autel'
+rootProject.name='DronelinkAutel'
