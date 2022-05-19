@@ -1,2 +1,6 @@
 include ':dronelink_autel'
+
+include(":autel-sdk")
+project(":autel-sdk").projectDir = file("./modules/autel-sdk")
+
 rootProject.name='DronelinkAutel'
