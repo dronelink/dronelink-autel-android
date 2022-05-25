@@ -1,5 +1,10 @@
 package com.dronelink.autel.adapters;
 
+import com.autel.common.CallbackWithTwoParams;
+import com.autel.common.camera.CameraProduct;
+import com.autel.common.error.AutelError;
+import com.autel.sdk.camera.AutelBaseCamera;
+import com.autel.sdk.camera.AutelCameraManager;
 import com.dronelink.autel.AutelDroneSession;
 import com.dronelink.core.adapters.CameraAdapter;
 import com.dronelink.core.adapters.DroneAdapter;
@@ -11,18 +16,45 @@ import com.dronelink.core.kernel.command.drone.VelocityDroneCommand;
 
 import com.autel.sdk.product.BaseProduct;
 
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.ArrayList;
 
 public class AutelDroneAdapter extends DroneAdapter {
-    private BaseProduct _drone;
-    public AutelDroneSession _session;
+    public BaseProduct _drone;
+    private AutelBaseCamera _currentCamera;
+    private AutelCameraManager _autelCameraManager;
+    public WeakReference<AutelDroneSession> _session;
+
 
     public AutelDroneAdapter(BaseProduct drone)
     {
-        this._drone = drone;
+        _drone = drone;
+        _autelCameraManager = drone.getCameraManager();
+        initCameraListener();
     }
 
+    private void initCameraListener() {
+        if (null == _autelCameraManager) {
+            return;
+        }
+
+        _autelCameraManager.setCameraChangeListener(new CallbackWithTwoParams<CameraProduct, AutelBaseCamera>() {
+            @Override
+            public void onSuccess(CameraProduct cameraProduct, AutelBaseCamera autelBaseCamera) {
+                if (_currentCamera == autelBaseCamera) {
+                    return;
+                }
+
+                _currentCamera = autelBaseCamera;
+            }
+
+            @Override
+            public void onFailure(AutelError autelError) {
+
+            }
+        });
+    }
 
     @Override
     public Collection<RemoteControllerAdapter> getRemoteControllers() {
@@ -69,7 +101,7 @@ public class AutelDroneAdapter extends DroneAdapter {
     @Override
     public CameraAdapter getCamera(int channel) {
         if (channel == 0) {
-            return new AutelCameraAdapter(_drone.getCameraManager());
+            return new AutelCameraAdapter(_currentCamera);
         }
         return null;
     }
@@ -89,9 +121,10 @@ public class AutelDroneAdapter extends DroneAdapter {
             return;
         }
 
-        AutelDroneSession session = _session;
+        WeakReference<AutelDroneSession> session = _session;
 
         //TODO: pick back up here
+
     }
 
     @Override
