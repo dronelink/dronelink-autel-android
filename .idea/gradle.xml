@@ -11,6 +11,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/dronelink_autel" />
+            <option value="$PROJECT_DIR$/modules/autel-sdk" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
