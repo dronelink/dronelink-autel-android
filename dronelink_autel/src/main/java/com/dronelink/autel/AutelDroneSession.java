@@ -49,6 +49,9 @@ import com.dronelink.core.kernel.command.gimbal.GimbalCommand;
 import com.dronelink.core.kernel.command.gimbal.ModeGimbalCommand;
 import com.dronelink.core.kernel.command.remotecontroller.RemoteControllerCommand;
 import com.dronelink.core.kernel.core.Message;
+import com.dronelink.core.kernel.core.Orientation3;
+import com.dronelink.core.kernel.core.enums.DroneLightbridgeFrequencyBand;
+import com.dronelink.core.kernel.core.enums.DroneOcuSyncFrequencyBand;
 import com.dronelink.core.kernel.core.enums.ExecutionEngine;
 
 import org.json.JSONException;
@@ -81,10 +84,6 @@ public class AutelDroneSession implements DroneSession {
     private String _model;
     private boolean _initialized = false;
     private boolean _located = false;
-    private Location _lastKnownGroundLocation;
-
-    private AutelCoordinate3D _location;
-    private EvoAttitudeInfo _attitude;
 
     private final List<Listener> listeners = new LinkedList<>();
     private final ExecutorService listenerExecutor = Executors.newSingleThreadExecutor();
@@ -94,7 +93,7 @@ public class AutelDroneSession implements DroneSession {
     private final MultiChannelCommandQueue _gimbalCommands = new MultiChannelCommandQueue();
 
     private final ExecutorService _mainControllerSerialQueue = Executors.newSingleThreadExecutor();
-    private DatedValue<FlyControllerInfo> _mainControllerState;
+    private DatedValue<EvoFlyControllerInfo> _mainControllerState;
 
     private final ExecutorService _batterySerialQueue = Executors.newSingleThreadExecutor();
     private DatedValue<BatteryState> _batteryState;
@@ -130,6 +129,21 @@ public class AutelDroneSession implements DroneSession {
     public double getMaxDescentVelocity() {
         return _maxDescentVelocity;
     }
+
+    // extended variables
+    private String _mode;
+    private boolean _isFlying = false;
+    private boolean isHomeValid = false;
+    private AutelLocation homeLocation;
+    private AutelLocation _lastKnownGroundLocation;
+    private AutelLocation _takeOffLocation;
+    private Double _takeOffAltitude = null;
+    private double _course = 0;
+    private double _horizontalSpeed = 0;
+    private double _verticalSpeed = 0;
+    private double _altitude = 0;
+    private Double _ultrasonicAltitude = null;
+    private Orientation3 _orientation = null;
 
     public AutelDroneSession(final Context context, DroneSessionManager manager, BaseProduct drone) throws Exception {
         switch (drone.getType()) {
@@ -217,13 +231,13 @@ public class AutelDroneSession implements DroneSession {
         _flyController.setFlyControllerInfoListener(new CallbackWithOneParam<EvoFlyControllerInfo>() {
             @Override
             public void onSuccess(EvoFlyControllerInfo flyControllerInfo) {
-                EvoGpsInfo gpsInfo = flyControllerInfo.getGpsInfo();
-                if (null != gpsInfo) {
-                    AutelCoordinate3D coord3D = new AutelCoordinate3D(gpsInfo.getLatitude(), gpsInfo.getLongitude(), gpsInfo.getAltitude());
-                    if (null != coord3D) {
-                        updateAircraftLocation(coord3D, flyControllerInfo.getAttitudeInfo());
+                _mainControllerSerialQueue.submit(new Callable<Object>() {
+                    @Override
+                    public Object call() throws Exception {
+                        _mainControllerState = new DatedValue<EvoFlyControllerInfo>(flyControllerInfo);
+                        return null;
                     }
-                }
+                });
             }
 
             @Override
@@ -272,17 +286,118 @@ public class AutelDroneSession implements DroneSession {
         _model = _adapter._drone.getType().getDescription();
     }
 
-    private void updateAircraftLocation(AutelCoordinate3D coord3D, EvoAttitudeInfo attitudeInfo)  {
-        _location = coord3D;
-        _attitude = attitudeInfo;
+    public class AutelLocation {
+        public AutelCoordinate3D coord3D;
+        public EvoAttitudeInfo attitude;
     }
 
-    public DatedValue<FlyControllerInfo> getMainControllerState() {
+    private AutelLocation getAircraftLocation()  {
+        DatedValue<EvoFlyControllerInfo> mainControllerState = getMainControllerState();
+        if (null != mainControllerState && null != mainControllerState.value) {
+            EvoGpsInfo gpsInfo = mainControllerState.value.getGpsInfo();
+            if (null != gpsInfo) {
+                AutelCoordinate3D coord3D = new AutelCoordinate3D(gpsInfo.getLatitude(), gpsInfo.getLongitude(), gpsInfo.getAltitude());
+                if (null != coord3D) {
+                    AutelLocation result = new AutelLocation();
+                    result.coord3D = coord3D;
+                    result.attitude = _mainControllerState.value.getAttitudeInfo();
+                    return result;
+                }
+            }
+        }
+        return null;
+    }
+
+    private Double getBatteryPercent() {
+        try
+        {
+            return _batterySerialQueue.submit(new Callable<Double>() {
+                @Override
+                public Double call() throws Exception {
+                    if (null != _batteryState.value) {
+                        int remainingPercent = _batteryState.value.getRemainingPercent();
+                        return (double) remainingPercent / 100.0;
+                    }
+                    return null;
+                }
+            }).get();
+        }
+        catch (final ExecutionException | InterruptedException e) {
+            return null;
+        }
+    }
+
+    private Double getLowBatteryThreshold() {
+        // TODO: fixme
+        return null;
+    }
+
+    private Double getFlightTimeRemaining() {
+        // TODO: fixme
+        return null;
+    }
+
+    private Double getObstacleDistance() {
+        // TODO: fixme
+        return null;
+    }
+
+    public Orientation3 getOrientation() {
+        return _orientation != null ? _orientation : new Orientation3();
+    }
+
+    public Integer getGpsSatellitesCount() {
+        DatedValue<EvoFlyControllerInfo> mainControllerState = getMainControllerState();
+        if (null != mainControllerState && null != mainControllerState.value) {
+            EvoGpsInfo gpsInfo = mainControllerState.value.getGpsInfo();
+            if (null != gpsInfo) {
+                return gpsInfo.getSatellitesVisible();
+            }
+        }
+        return null;
+    }
+
+    public Double getGpsSignalStrength() {
+        DatedValue<EvoFlyControllerInfo> mainControllerState = getMainControllerState();
+        if (null != mainControllerState && null != mainControllerState.value) {
+            EvoGpsInfo gpsInfo = mainControllerState.value.getGpsInfo();
+            if (null != gpsInfo) {
+                return (double)gpsInfo.getGpsLevel();
+            }
+        }
+        return null;
+    }
+
+    public Double getDownlinkSignalStrength() {
+        DatedValue<RemoteControllerInfo> remoteControllerState = getRemoteControllerRCState();
+        if (null != remoteControllerState && null != remoteControllerState.value) {
+            return (double)remoteControllerState.value.getDSPPercentage();
+        }
+        return null;
+    }
+
+    public Double getUplinkSignalStrength() {
+        DatedValue<RemoteControllerInfo> remoteControllerState = getRemoteControllerRCState();
+        if (null != remoteControllerState && null != remoteControllerState.value) {
+            return (double)remoteControllerState.value.getControllerSignalPercentage();
+        }
+        return null;
+    }
+
+    public DroneLightbridgeFrequencyBand getLightbridgeFrequencyBand() {
+        return null;
+    }
+
+    public DroneOcuSyncFrequencyBand getOcuSyncFrequencyBand() {
+        return null;
+    }
+
+    public DatedValue<EvoFlyControllerInfo> getMainControllerState() {
         try {
             AutelDroneSession self = this;
-            return _mainControllerSerialQueue.submit(new Callable<DatedValue<FlyControllerInfo>>() {
+            return _mainControllerSerialQueue.submit(new Callable<DatedValue<EvoFlyControllerInfo>>() {
                 @Override
-                public DatedValue<FlyControllerInfo> call() throws Exception {
+                public DatedValue<EvoFlyControllerInfo> call() throws Exception {
                     return self._mainControllerState;
                 }
             }).get();
@@ -329,7 +444,15 @@ public class AutelDroneSession implements DroneSession {
                 onInitialized();
             }
 
+            AutelLocation location = getAircraftLocation();
+            if (null != location) {
+                _located = true;
+                onLocated();
 
+                if (!_isFlying) {
+
+                }
+            }
         }
     }
 
@@ -451,11 +574,11 @@ public class AutelDroneSession implements DroneSession {
             public void run() {
                 listeners.add(listener);
 
-                if (state.initialized) {
+                if (_initialized) {
                     listener.onInitialized(self);
                 }
 
-                if (state.located) {
+                if (_located) {
                     listener.onLocated(self);
                 }
             }
@@ -468,6 +591,24 @@ public class AutelDroneSession implements DroneSession {
             @Override
             public void run() {
                 listeners.remove(listener);
+            }
+        });
+    }
+
+    private void onInitialized() {
+        for (final Listener listener : listeners) {
+            listener.onInitialized(this);
+        }
+    }
+
+    private void onLocated() {
+        final AutelDroneSession self = this;
+        listenerExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                for (final Listener listener : listeners) {
+                    listener.onLocated(self);
+                }
             }
         });
     }
