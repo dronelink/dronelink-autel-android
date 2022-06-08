@@ -959,47 +959,48 @@ public class AutelDroneSession implements DroneSession {
     }
 
     private CommandError executeDroneCommand(final DroneCommand command, final com.dronelink.core.command.Command.Finisher finished) {
-        if (command instanceof FlightAssistantDroneCommand) {
-            return executeFlightAssistantDroneCommand((FlightAssistantDroneCommand) command, finished);
-        }
+//        if (command instanceof FlightAssistantDroneCommand) {
+//            return executeFlightAssistantDroneCommand((FlightAssistantDroneCommand) command, finished);
+//        }
 
-        if (command instanceof LandingGearDroneCommand) {
-            return executeLandingGearDroneCommand((LandingGearDroneCommand) command, finished);
-        }
+//        if (command instanceof LandingGearDroneCommand) {
+//            return executeLandingGearDroneCommand((LandingGearDroneCommand) command, finished);
+//        }
 
-        if (command instanceof LightbridgeDroneCommand) {
-            return executeLightbridgeDroneCommand((LightbridgeDroneCommand) command, finished);
-        }
+//        if (command instanceof LightbridgeDroneCommand) {
+//            return executeLightbridgeDroneCommand((LightbridgeDroneCommand) command, finished);
+//        }
 
-        if (command instanceof OcuSyncDroneCommand) {
-            return executeOcuSyncDroneCommand((OcuSyncDroneCommand) command, finished);
-        }
+//        if (command instanceof OcuSyncDroneCommand) {
+//            return executeOcuSyncDroneCommand((OcuSyncDroneCommand) command, finished);
+//        }
 
-        if (command instanceof AccessoryDroneCommand) {
-            return executeAccessoryDroneCommand((AccessoryDroneCommand) command, finished);
-        }
+//        if (command instanceof AccessoryDroneCommand) {
+//            return executeAccessoryDroneCommand((AccessoryDroneCommand) command, finished);
+//        }
 
         final Evo2FlyController flyController = (Evo2FlyController)_adapter._drone.getFlyController();
         if (flyController == null) {
-            return new CommandError(context.getString(R.string.MissionDisengageReason_drone_control_unavailable_title));
+            //return new CommandError(context.getString(R.string.MissionDisengageReason_drone_control_unavailable_title));
+            return new CommandError("Drone control unavailable");
         }
 
         // TODO: what should this be in the Autel SDK?
-        if (command instanceof ConnectionFailSafeBehaviorDroneCommand) {
-            flyController.getConnectionFailSafeBehavior(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<ConnectionFailSafeBehavior>() {
-                @Override
-                public void execute(final ConnectionFailSafeBehavior current) {
-                    final ConnectionFailSafeBehavior target = DronelinkDJI.getDroneConnectionFailSafeBehavior(((ConnectionFailSafeBehaviorDroneCommand) command).connectionFailSafeBehavior);
-                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
-                        @Override
-                        public void execute() {
-                            flightController.setConnectionFailSafeBehavior(target, createCompletionCallback(finished));
-                        }
-                    });
-                }
-            }, finished));
-            return null;
-        }
+//        if (command instanceof ConnectionFailSafeBehaviorDroneCommand) {
+//            flyController.getConnectionFailSafeBehavior(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<ConnectionFailSafeBehavior>() {
+//                @Override
+//                public void execute(final ConnectionFailSafeBehavior current) {
+//                    final ConnectionFailSafeBehavior target = DronelinkDJI.getDroneConnectionFailSafeBehavior(((ConnectionFailSafeBehaviorDroneCommand) command).connectionFailSafeBehavior);
+//                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
+//                        @Override
+//                        public void execute() {
+//                            flightController.setConnectionFailSafeBehavior(target, createCompletionCallback(finished));
+//                        }
+//                    });
+//                }
+//            }, finished));
+//            return null;
+//        }
 
         if (command instanceof HomeLocationDroneCommand) {
             final GeoCoordinate coordinate = ((HomeLocationDroneCommand) command).coordinate;
@@ -1124,394 +1125,411 @@ public class AutelDroneSession implements DroneSession {
 //            return null;
 //        }
 
-        return new CommandError(context.getString(R.string.MissionDisengageReason_command_type_unhandled));
+        //return new CommandError(context.getString(R.string.MissionDisengageReason_command_type_unhandled));
+        return new CommandError("Unhandled command");
     }
 
-    private CommandError executeFlightAssistantDroneCommand(final FlightAssistantDroneCommand command, final com.dronelink.core.command.Command.Finisher finished) {
-        final FlightController flightController = adapter.getDrone().getFlightController();
-        if (flightController == null) {
-            return new CommandError(context.getString(R.string.MissionDisengageReason_drone_flight_assistant_unavailable_title));
-        }
-
-        final FlightAssistant flightAssistant = flightController.getFlightAssistant();
-        if (flightAssistant == null) {
-            return new CommandError(context.getString(R.string.MissionDisengageReason_drone_flight_assistant_unavailable_title));
-        }
-
-        if (command instanceof CollisionAvoidanceDroneCommand) {
-//            flightAssistant.getCollisionAvoidanceEnabled(createCompletionCallbackWith(new Command.FinisherWith<Boolean>() {
+    // TODO: does the Autel SDK even support things like obstacle avoidance?
+//    private CommandError executeFlightAssistantDroneCommand(final FlightAssistantDroneCommand command, final com.dronelink.core.command.Command.Finisher finished) {
+//        final FlightController flightController = adapter.getDrone().getFlightController();
+//        if (flightController == null) {
+//            return new CommandError(context.getString(R.string.MissionDisengageReason_drone_flight_assistant_unavailable_title));
+//        }
+//
+//        final FlightAssistant flightAssistant = flightController.getFlightAssistant();
+//        if (flightAssistant == null) {
+//            return new CommandError(context.getString(R.string.MissionDisengageReason_drone_flight_assistant_unavailable_title));
+//        }
+//
+//        if (command instanceof CollisionAvoidanceDroneCommand) {
+////            flightAssistant.getCollisionAvoidanceEnabled(createCompletionCallbackWith(new Command.FinisherWith<Boolean>() {
+////                @Override
+////                public void execute(final Boolean current) {
+////                    final Boolean target = ((CollisionAvoidanceDroneCommand) command).enabled;
+////                    Command.conditionallyExecute(!target.equals(current), finished, new Command.ConditionalExecutor() {
+////                        @Override
+////                        public void execute() {
+////                            flightAssistant.setCollisionAvoidanceEnabled(target, createCompletionCallback(finished));
+////                        }
+////                    });
+////                }
+////            }, finished));
+//            //skipping conditional execution for now because it seems like the DJI SDK always returns true for getCollisionAvoidanceEnabled
+//            flightAssistant.setCollisionAvoidanceEnabled(((CollisionAvoidanceDroneCommand) command).enabled, createCompletionCallback(finished));
+//            return null;
+//        }
+//
+//        if (command instanceof LandingProtectionDroneCommand) {
+//            flightAssistant.getLandingProtectionEnabled(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Boolean>() {
 //                @Override
 //                public void execute(final Boolean current) {
-//                    final Boolean target = ((CollisionAvoidanceDroneCommand) command).enabled;
-//                    Command.conditionallyExecute(!target.equals(current), finished, new Command.ConditionalExecutor() {
+//                    final Boolean target = ((LandingProtectionDroneCommand) command).enabled;
+//                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
 //                        @Override
 //                        public void execute() {
-//                            flightAssistant.setCollisionAvoidanceEnabled(target, createCompletionCallback(finished));
+//                            flightAssistant.setLandingProtectionEnabled(target, createCompletionCallback(finished));
 //                        }
 //                    });
 //                }
 //            }, finished));
-            //skipping conditional execution for now because it seems like the DJI SDK always returns true for getCollisionAvoidanceEnabled
-            flightAssistant.setCollisionAvoidanceEnabled(((CollisionAvoidanceDroneCommand) command).enabled, createCompletionCallback(finished));
-            return null;
-        }
+//            return null;
+//        }
+//
+//        if (command instanceof PrecisionLandingDroneCommand) {
+//            flightAssistant.getPrecisionLandingEnabled(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Boolean>() {
+//                @Override
+//                public void execute(final Boolean current) {
+//                    final Boolean target = ((PrecisionLandingDroneCommand) command).enabled;
+//                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
+//                        @Override
+//                        public void execute() {
+//                            flightAssistant.setPrecisionLandingEnabled(target, createCompletionCallback(finished));
+//                        }
+//                    });
+//                }
+//            }, finished));
+//            return null;
+//        }
+//
+//        if (command instanceof ReturnHomeObstacleAvoidanceDroneCommand) {
+//            flightAssistant.getRTHObstacleAvoidanceEnabled(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Boolean>() {
+//                @Override
+//                public void execute(final Boolean current) {
+//                    final Boolean target = ((ReturnHomeObstacleAvoidanceDroneCommand) command).enabled;
+//                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
+//                        @Override
+//                        public void execute() {
+//                            flightAssistant.setRTHObstacleAvoidanceEnabled(target, createCompletionCallback(finished));
+//                        }
+//                    });
+//                }
+//            }, finished));
+//            return null;
+//        }
+//
+//        if (command instanceof ReturnHomeRemoteObstacleAvoidanceDroneCommand) {
+//            flightAssistant.getRTHRemoteObstacleAvoidanceEnabled(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Boolean>() {
+//                @Override
+//                public void execute(final Boolean current) {
+//                    final Boolean target = ((ReturnHomeRemoteObstacleAvoidanceDroneCommand) command).enabled;
+//                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
+//                        @Override
+//                        public void execute() {
+//                            flightAssistant.setRTHRemoteObstacleAvoidanceEnabled(target, createCompletionCallback(finished));
+//                        }
+//                    });
+//                }
+//            }, finished));
+//            return null;
+//        }
+//
+//        if (command instanceof UpwardsAvoidanceDroneCommand) {
+//            flightAssistant.getUpwardVisionObstacleAvoidanceEnabled(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Boolean>() {
+//                @Override
+//                public void execute(final Boolean current) {
+//                    final Boolean target = ((UpwardsAvoidanceDroneCommand) command).enabled;
+//                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
+//                        @Override
+//                        public void execute() {
+//                            flightAssistant.setUpwardVisionObstacleAvoidanceEnabled(target, createCompletionCallback(finished));
+//                        }
+//                    });
+//                }
+//            }, finished));
+//            return null;
+//        }
+//
+//        if (command instanceof VisionAssistedPositioningDroneCommand) {
+//            flightAssistant.getVisionAssistedPositioningEnabled(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Boolean>() {
+//                @Override
+//                public void execute(final Boolean current) {
+//                    final Boolean target = ((VisionAssistedPositioningDroneCommand) command).enabled;
+//                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
+//                        @Override
+//                        public void execute() {
+//                            flightAssistant.setVisionAssistedPositioningEnabled(target, createCompletionCallback(finished));
+//                        }
+//                    });
+//                }
+//            }, finished));
+//            return null;
+//        }
+//
+//        return new CommandError(context.getString(R.string.MissionDisengageReason_command_type_unhandled));
+//    }
 
-        if (command instanceof LandingProtectionDroneCommand) {
-            flightAssistant.getLandingProtectionEnabled(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Boolean>() {
-                @Override
-                public void execute(final Boolean current) {
-                    final Boolean target = ((LandingProtectionDroneCommand) command).enabled;
-                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
-                        @Override
-                        public void execute() {
-                            flightAssistant.setLandingProtectionEnabled(target, createCompletionCallback(finished));
-                        }
-                    });
-                }
-            }, finished));
-            return null;
-        }
+    // TODO: I see things like Evo2FlyController.land(), but no landing gear controls.
+//    private CommandError executeLandingGearDroneCommand(final LandingGearDroneCommand command, final com.dronelink.core.command.Command.Finisher finished) {
+//        final LandingGear landingGear = adapter.getDrone().getFlightController().getLandingGear();
+//        if (landingGear == null) {
+//            return new CommandError(context.getString(R.string.MissionDisengageReason_drone_landing_gear_unavailable_title));
+//        }
+//
+//        if (command instanceof LandingGearAutomaticMovementDroneCommand) {
+//            landingGear.getAutomaticMovementEnabled(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Boolean>() {
+//                @Override
+//                public void execute(final Boolean current) {
+//                    final Boolean target = ((LandingGearAutomaticMovementDroneCommand) command).enabled;
+//                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
+//                        @Override
+//                        public void execute() {
+//                            landingGear.setAutomaticMovementEnabled(target, createCompletionCallback(finished));
+//                        }
+//                    });
+//                }
+//            }, finished));
+//            return null;
+//        }
+//
+//        if (command instanceof LandingGearDeployDroneCommand) {
+//            com.dronelink.core.command.Command.conditionallyExecute(!(landingGear.getState() == LandingGearState.DEPLOYED || landingGear.getState() == LandingGearState.DEPLOYING), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
+//                @Override
+//                public void execute() {
+//                    landingGear.deploy(createCompletionCallback(finished));
+//                }
+//            });
+//            return null;
+//        }
+//
+//        if (command instanceof LandingGearRetractDroneCommand) {
+//            com.dronelink.core.command.Command.conditionallyExecute(!(landingGear.getState() == LandingGearState.RETRACTED || landingGear.getState() == LandingGearState.RETRACTING), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
+//                @Override
+//                public void execute() {
+//                    landingGear.retract(createCompletionCallback(finished));
+//                }
+//            });
+//            return null;
+//        }
+//
+//        return new CommandError(context.getString(R.string.MissionDisengageReason_command_type_unhandled));
+//    }
 
-        if (command instanceof PrecisionLandingDroneCommand) {
-            flightAssistant.getPrecisionLandingEnabled(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Boolean>() {
-                @Override
-                public void execute(final Boolean current) {
-                    final Boolean target = ((PrecisionLandingDroneCommand) command).enabled;
-                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
-                        @Override
-                        public void execute() {
-                            flightAssistant.setPrecisionLandingEnabled(target, createCompletionCallback(finished));
-                        }
-                    });
-                }
-            }, finished));
-            return null;
-        }
+    // TODO: what is the lightbridge in the Evo 2 world?
+//    private CommandError executeLightbridgeDroneCommand(final LightbridgeDroneCommand command, final com.dronelink.core.command.Command.Finisher finished) {
+//        DatedValue<RemoteControllerInfo> rcStateDatedValue = getRemoteControllerRCState();
+//        RemoteControllerInfo rcState = null;
+//        if (rcStateDatedValue != null && rcStateDatedValue.value != null) {
+//            rcState = rcStateDatedValue.value;
+//        }
+//
+//        if (null == rcState) {
+//            return new CommandError(context.getString(R.string.MissionDisengageReason_drone_lightbridge_unavailable_title));
+//        }
+//
+//        final AirLink airLink = adapter.getDrone().getAirLink();
+//        if (airLink == null) {
+//            return new CommandError(context.getString(R.string.MissionDisengageReason_drone_lightbridge_unavailable_title));
+//        }
+//
+//        final LightbridgeLink link = airLink.getLightbridgeLink();
+//        if (link == null) {
+//            return new CommandError(context.getString(R.string.MissionDisengageReason_drone_lightbridge_unavailable_title));
+//        }
+//
+//        if (command instanceof LightbridgeChannelDroneCommand) {
+//            link.getChannelNumber(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Integer>() {
+//                @Override
+//                public void execute(final Integer current) {
+//                    final Integer target = ((LightbridgeChannelDroneCommand) command).lightbridgeChannel;
+//                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
+//                        @Override
+//                        public void execute() {
+//                            link.setChannelNumber(target, createCompletionCallback(finished));
+//                        }
+//                    });
+//                }
+//            }, finished));
+//            return null;
+//        }
+//
+//        if (command instanceof LightbridgeChannelSelectionModeDroneCommand) {
+//            link.getChannelSelectionMode(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<ChannelSelectionMode>() {
+//                @Override
+//                public void execute(final ChannelSelectionMode current) {
+//                    final ChannelSelectionMode target = DronelinkDJI.getLightbridgeChannelSelectionMode(((LightbridgeChannelSelectionModeDroneCommand) command).lightbridgeChannelSelectionMode);
+//                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
+//                        @Override
+//                        public void execute() {
+//                            link.setChannelSelectionMode(target, createCompletionCallback(finished));
+//                        }
+//                    });
+//                }
+//            }, finished));
+//            return null;
+//        }
+//
+//        if (command instanceof LightbridgeFrequencyBandDroneCommand) {
+//            link.getFrequencyBand(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<LightbridgeFrequencyBand>() {
+//                @Override
+//                public void execute(final LightbridgeFrequencyBand current) {
+//                    final LightbridgeFrequencyBand target = DronelinkDJI.getLightbridgeFrequencyBand(((LightbridgeFrequencyBandDroneCommand) command).lightbridgeFrequencyBand);
+//                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
+//                        @Override
+//                        public void execute() {
+//                            link.setFrequencyBand(target, createCompletionCallback(finished));
+//                        }
+//                    });
+//                }
+//            }, finished));
+//            return null;
+//        }
+//
+//        return new CommandError(context.getString(R.string.MissionDisengageReason_command_type_unhandled));
+//    }
 
-        if (command instanceof ReturnHomeObstacleAvoidanceDroneCommand) {
-            flightAssistant.getRTHObstacleAvoidanceEnabled(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Boolean>() {
-                @Override
-                public void execute(final Boolean current) {
-                    final Boolean target = ((ReturnHomeObstacleAvoidanceDroneCommand) command).enabled;
-                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
-                        @Override
-                        public void execute() {
-                            flightAssistant.setRTHObstacleAvoidanceEnabled(target, createCompletionCallback(finished));
-                        }
-                    });
-                }
-            }, finished));
-            return null;
-        }
+    // TODO: what is this?
+//    private CommandError executeOcuSyncDroneCommand(final OcuSyncDroneCommand command, final com.dronelink.core.command.Command.Finisher finished) {
+//        final AirLink airLink = adapter.getDrone().getAirLink();
+//        if (airLink == null) {
+//            return new CommandError(context.getString(R.string.MissionDisengageReason_drone_ocusync_unavailable_title));
+//        }
+//
+//        final OcuSyncLink link = airLink.getOcuSyncLink();
+//        if (link == null) {
+//            return new CommandError(context.getString(R.string.MissionDisengageReason_drone_ocusync_unavailable_title));
+//        }
+//
+//        if (command instanceof OcuSyncChannelDroneCommand) {
+//            link.getChannelNumber(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Integer>() {
+//                @Override
+//                public void execute(final Integer current) {
+//                    final Integer target = ((OcuSyncChannelDroneCommand) command).ocuSyncChannel;
+//                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
+//                        @Override
+//                        public void execute() {
+//                            link.setChannelNumber(target, createCompletionCallback(finished));
+//                        }
+//                    });
+//                }
+//            }, finished));
+//            return null;
+//        }
+//
+//        if (command instanceof OcuSyncChannelSelectionModeDroneCommand) {
+//            link.getChannelSelectionMode(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<ChannelSelectionMode>() {
+//                @Override
+//                public void execute(final ChannelSelectionMode current) {
+//                    final ChannelSelectionMode target = DronelinkDJI.getOcuSyncChannelSelectionMode(((OcuSyncChannelSelectionModeDroneCommand) command).ocuSyncChannelSelectionMode);
+//                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
+//                        @Override
+//                        public void execute() {
+//                            link.setChannelSelectionMode(target, createCompletionCallback(finished));
+//                        }
+//                    });
+//                }
+//            }, finished));
+//            return null;
+//        }
+//
+//        if (command instanceof OcuSyncFrequencyBandDroneCommand) {
+//            link.getFrequencyBand(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<OcuSyncFrequencyBand>() {
+//                @Override
+//                public void execute(final OcuSyncFrequencyBand current) {
+//                    final OcuSyncFrequencyBand target = DronelinkDJI.getOcuSyncFrequencyBand(((OcuSyncFrequencyBandDroneCommand) command).ocuSyncFrequencyBand);
+//                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
+//                        @Override
+//                        public void execute() {
+//                            link.setFrequencyBand(target, createCompletionCallback(finished));
+//                        }
+//                    });
+//                }
+//            }, finished));
+//            return null;
+//        }
+//
+//        if (command instanceof OcuSyncVideoFeedSourcesDroneCommand) {
+//            link.assignSourceToPrimaryChannel(
+//                    DronelinkDJI.getOcuSyncFeedSource((OcuSyncVideoFeedSourcesDroneCommand) command, 0),
+//                    DronelinkDJI.getOcuSyncFeedSource((OcuSyncVideoFeedSourcesDroneCommand) command, 1),
+//                    createCompletionCallback(finished));
+//            return null;
+//        }
+//
+//        return new CommandError(context.getString(R.string.MissionDisengageReason_command_type_unhandled));
+//    }
 
-        if (command instanceof ReturnHomeRemoteObstacleAvoidanceDroneCommand) {
-            flightAssistant.getRTHRemoteObstacleAvoidanceEnabled(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Boolean>() {
-                @Override
-                public void execute(final Boolean current) {
-                    final Boolean target = ((ReturnHomeRemoteObstacleAvoidanceDroneCommand) command).enabled;
-                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
-                        @Override
-                        public void execute() {
-                            flightAssistant.setRTHRemoteObstacleAvoidanceEnabled(target, createCompletionCallback(finished));
-                        }
-                    });
-                }
-            }, finished));
-            return null;
-        }
+    // TODO: how to access these in the Autel SDK?
+//    private CommandError executeAccessoryDroneCommand(final AccessoryDroneCommand command, final com.dronelink.core.command.Command.Finisher finished) {
+//        final AccessoryAggregation accessoryAggregation = adapter.getDrone().getAccessoryAggregation();
+//        if (accessoryAggregation == null) {
+//            return new CommandError(context.getString(R.string.MissionDisengageReason_drone_accessory_aggregation_unavailable_title));
+//        }
+//
+//        if (command instanceof BeaconDroneCommand) {
+//            final Beacon beacon = accessoryAggregation.getBeacon();
+//            if (beacon == null) {
+//                return new CommandError(context.getString(R.string.MissionDisengageReason_drone_beacon_unavailable_title));
+//            }
+//
+//            beacon.getEnabled(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Boolean>() {
+//                @Override
+//                public void execute(final Boolean current) {
+//                    final Boolean target = ((BeaconDroneCommand) command).enabled;
+//                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
+//                        @Override
+//                        public void execute() {
+//                            beacon.setEnabled(target, createCompletionCallback(finished));
+//                        }
+//                    });
+//                }
+//            }, finished));
+//            return null;
+//        }
+//
+//        if (command instanceof SpotlightDroneCommand || command instanceof SpotlightBrightnessDroneCommand) {
+//            final Spotlight spotlight = accessoryAggregation.getSpotlight();
+//            if (spotlight == null) {
+//                return new CommandError(context.getString(R.string.MissionDisengageReason_drone_spotlight_unavailable_title));
+//            }
+//
+//            if (command instanceof SpotlightDroneCommand) {
+//                spotlight.getEnabled(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Boolean>() {
+//                    @Override
+//                    public void execute(final Boolean current) {
+//                        final Boolean target = ((SpotlightDroneCommand) command).enabled;
+//                        com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
+//                            @Override
+//                            public void execute() {
+//                                spotlight.setEnabled(target, createCompletionCallback(finished));
+//                            }
+//                        });
+//                    }
+//                }, finished));
+//                return null;
+//            }
+//
+//            spotlight.setBrightness((int)(((SpotlightBrightnessDroneCommand) command).spotlightBrightness * 100), createCompletionCallback(finished));
+//            return null;
+//        }
+//
+//        return new CommandError(context.getString(R.string.MissionDisengageReason_command_type_unhandled));
+//    }
 
-        if (command instanceof UpwardsAvoidanceDroneCommand) {
-            flightAssistant.getUpwardVisionObstacleAvoidanceEnabled(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Boolean>() {
-                @Override
-                public void execute(final Boolean current) {
-                    final Boolean target = ((UpwardsAvoidanceDroneCommand) command).enabled;
-                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
-                        @Override
-                        public void execute() {
-                            flightAssistant.setUpwardVisionObstacleAvoidanceEnabled(target, createCompletionCallback(finished));
-                        }
-                    });
-                }
-            }, finished));
-            return null;
-        }
-
-        if (command instanceof VisionAssistedPositioningDroneCommand) {
-            flightAssistant.getVisionAssistedPositioningEnabled(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Boolean>() {
-                @Override
-                public void execute(final Boolean current) {
-                    final Boolean target = ((VisionAssistedPositioningDroneCommand) command).enabled;
-                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
-                        @Override
-                        public void execute() {
-                            flightAssistant.setVisionAssistedPositioningEnabled(target, createCompletionCallback(finished));
-                        }
-                    });
-                }
-            }, finished));
-            return null;
-        }
-
-        return new CommandError(context.getString(R.string.MissionDisengageReason_command_type_unhandled));
-    }
-
-    private CommandError executeLandingGearDroneCommand(final LandingGearDroneCommand command, final com.dronelink.core.command.Command.Finisher finished) {
-        final LandingGear landingGear = adapter.getDrone().getFlightController().getLandingGear();
-        if (landingGear == null) {
-            return new CommandError(context.getString(R.string.MissionDisengageReason_drone_landing_gear_unavailable_title));
-        }
-
-        if (command instanceof LandingGearAutomaticMovementDroneCommand) {
-            landingGear.getAutomaticMovementEnabled(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Boolean>() {
-                @Override
-                public void execute(final Boolean current) {
-                    final Boolean target = ((LandingGearAutomaticMovementDroneCommand) command).enabled;
-                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
-                        @Override
-                        public void execute() {
-                            landingGear.setAutomaticMovementEnabled(target, createCompletionCallback(finished));
-                        }
-                    });
-                }
-            }, finished));
-            return null;
-        }
-
-        if (command instanceof LandingGearDeployDroneCommand) {
-            com.dronelink.core.command.Command.conditionallyExecute(!(landingGear.getState() == LandingGearState.DEPLOYED || landingGear.getState() == LandingGearState.DEPLOYING), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
-                @Override
-                public void execute() {
-                    landingGear.deploy(createCompletionCallback(finished));
-                }
-            });
-            return null;
-        }
-
-        if (command instanceof LandingGearRetractDroneCommand) {
-            com.dronelink.core.command.Command.conditionallyExecute(!(landingGear.getState() == LandingGearState.RETRACTED || landingGear.getState() == LandingGearState.RETRACTING), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
-                @Override
-                public void execute() {
-                    landingGear.retract(createCompletionCallback(finished));
-                }
-            });
-            return null;
-        }
-
-        return new CommandError(context.getString(R.string.MissionDisengageReason_command_type_unhandled));
-    }
-
-    private CommandError executeLightbridgeDroneCommand(final LightbridgeDroneCommand command, final com.dronelink.core.command.Command.Finisher finished) {
-        final AirLink airLink = adapter.getDrone().getAirLink();
-        if (airLink == null) {
-            return new CommandError(context.getString(R.string.MissionDisengageReason_drone_lightbridge_unavailable_title));
-        }
-
-        final LightbridgeLink link = airLink.getLightbridgeLink();
-        if (link == null) {
-            return new CommandError(context.getString(R.string.MissionDisengageReason_drone_lightbridge_unavailable_title));
-        }
-
-        if (command instanceof LightbridgeChannelDroneCommand) {
-            link.getChannelNumber(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Integer>() {
-                @Override
-                public void execute(final Integer current) {
-                    final Integer target = ((LightbridgeChannelDroneCommand) command).lightbridgeChannel;
-                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
-                        @Override
-                        public void execute() {
-                            link.setChannelNumber(target, createCompletionCallback(finished));
-                        }
-                    });
-                }
-            }, finished));
-            return null;
-        }
-
-        if (command instanceof LightbridgeChannelSelectionModeDroneCommand) {
-            link.getChannelSelectionMode(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<ChannelSelectionMode>() {
-                @Override
-                public void execute(final ChannelSelectionMode current) {
-                    final ChannelSelectionMode target = DronelinkDJI.getLightbridgeChannelSelectionMode(((LightbridgeChannelSelectionModeDroneCommand) command).lightbridgeChannelSelectionMode);
-                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
-                        @Override
-                        public void execute() {
-                            link.setChannelSelectionMode(target, createCompletionCallback(finished));
-                        }
-                    });
-                }
-            }, finished));
-            return null;
-        }
-
-        if (command instanceof LightbridgeFrequencyBandDroneCommand) {
-            link.getFrequencyBand(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<LightbridgeFrequencyBand>() {
-                @Override
-                public void execute(final LightbridgeFrequencyBand current) {
-                    final LightbridgeFrequencyBand target = DronelinkDJI.getLightbridgeFrequencyBand(((LightbridgeFrequencyBandDroneCommand) command).lightbridgeFrequencyBand);
-                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
-                        @Override
-                        public void execute() {
-                            link.setFrequencyBand(target, createCompletionCallback(finished));
-                        }
-                    });
-                }
-            }, finished));
-            return null;
-        }
-
-        return new CommandError(context.getString(R.string.MissionDisengageReason_command_type_unhandled));
-    }
-
-    private CommandError executeOcuSyncDroneCommand(final OcuSyncDroneCommand command, final com.dronelink.core.command.Command.Finisher finished) {
-        final AirLink airLink = adapter.getDrone().getAirLink();
-        if (airLink == null) {
-            return new CommandError(context.getString(R.string.MissionDisengageReason_drone_ocusync_unavailable_title));
-        }
-
-        final OcuSyncLink link = airLink.getOcuSyncLink();
-        if (link == null) {
-            return new CommandError(context.getString(R.string.MissionDisengageReason_drone_ocusync_unavailable_title));
-        }
-
-        if (command instanceof OcuSyncChannelDroneCommand) {
-            link.getChannelNumber(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Integer>() {
-                @Override
-                public void execute(final Integer current) {
-                    final Integer target = ((OcuSyncChannelDroneCommand) command).ocuSyncChannel;
-                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
-                        @Override
-                        public void execute() {
-                            link.setChannelNumber(target, createCompletionCallback(finished));
-                        }
-                    });
-                }
-            }, finished));
-            return null;
-        }
-
-        if (command instanceof OcuSyncChannelSelectionModeDroneCommand) {
-            link.getChannelSelectionMode(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<ChannelSelectionMode>() {
-                @Override
-                public void execute(final ChannelSelectionMode current) {
-                    final ChannelSelectionMode target = DronelinkDJI.getOcuSyncChannelSelectionMode(((OcuSyncChannelSelectionModeDroneCommand) command).ocuSyncChannelSelectionMode);
-                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
-                        @Override
-                        public void execute() {
-                            link.setChannelSelectionMode(target, createCompletionCallback(finished));
-                        }
-                    });
-                }
-            }, finished));
-            return null;
-        }
-
-        if (command instanceof OcuSyncFrequencyBandDroneCommand) {
-            link.getFrequencyBand(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<OcuSyncFrequencyBand>() {
-                @Override
-                public void execute(final OcuSyncFrequencyBand current) {
-                    final OcuSyncFrequencyBand target = DronelinkDJI.getOcuSyncFrequencyBand(((OcuSyncFrequencyBandDroneCommand) command).ocuSyncFrequencyBand);
-                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
-                        @Override
-                        public void execute() {
-                            link.setFrequencyBand(target, createCompletionCallback(finished));
-                        }
-                    });
-                }
-            }, finished));
-            return null;
-        }
-
-        if (command instanceof OcuSyncVideoFeedSourcesDroneCommand) {
-            link.assignSourceToPrimaryChannel(
-                    DronelinkDJI.getOcuSyncFeedSource((OcuSyncVideoFeedSourcesDroneCommand) command, 0),
-                    DronelinkDJI.getOcuSyncFeedSource((OcuSyncVideoFeedSourcesDroneCommand) command, 1),
-                    createCompletionCallback(finished));
-            return null;
-        }
-
-        return new CommandError(context.getString(R.string.MissionDisengageReason_command_type_unhandled));
-    }
-
-    private CommandError executeAccessoryDroneCommand(final AccessoryDroneCommand command, final com.dronelink.core.command.Command.Finisher finished) {
-        final AccessoryAggregation accessoryAggregation = adapter.getDrone().getAccessoryAggregation();
-        if (accessoryAggregation == null) {
-            return new CommandError(context.getString(R.string.MissionDisengageReason_drone_accessory_aggregation_unavailable_title));
-        }
-
-        if (command instanceof BeaconDroneCommand) {
-            final Beacon beacon = accessoryAggregation.getBeacon();
-            if (beacon == null) {
-                return new CommandError(context.getString(R.string.MissionDisengageReason_drone_beacon_unavailable_title));
-            }
-
-            beacon.getEnabled(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Boolean>() {
-                @Override
-                public void execute(final Boolean current) {
-                    final Boolean target = ((BeaconDroneCommand) command).enabled;
-                    com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
-                        @Override
-                        public void execute() {
-                            beacon.setEnabled(target, createCompletionCallback(finished));
-                        }
-                    });
-                }
-            }, finished));
-            return null;
-        }
-
-        if (command instanceof SpotlightDroneCommand || command instanceof SpotlightBrightnessDroneCommand) {
-            final Spotlight spotlight = accessoryAggregation.getSpotlight();
-            if (spotlight == null) {
-                return new CommandError(context.getString(R.string.MissionDisengageReason_drone_spotlight_unavailable_title));
-            }
-
-            if (command instanceof SpotlightDroneCommand) {
-                spotlight.getEnabled(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Boolean>() {
-                    @Override
-                    public void execute(final Boolean current) {
-                        final Boolean target = ((SpotlightDroneCommand) command).enabled;
-                        com.dronelink.core.command.Command.conditionallyExecute(!target.equals(current), finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
-                            @Override
-                            public void execute() {
-                                spotlight.setEnabled(target, createCompletionCallback(finished));
-                            }
-                        });
-                    }
-                }, finished));
-                return null;
-            }
-
-            spotlight.setBrightness((int)(((SpotlightBrightnessDroneCommand) command).spotlightBrightness * 100), createCompletionCallback(finished));
-            return null;
-        }
-
-        return new CommandError(context.getString(R.string.MissionDisengageReason_command_type_unhandled));
-    }
-
-    private CommandError executeRemoteControllerCommand(final RemoteControllerCommand command, final com.dronelink.core.command.Command.Finisher finished) {
-        final RemoteController remoteController = DronelinkDJI.getRemoteController(adapter.getDrone(), command.channel);
-        if (remoteController == null) {
-            return new CommandError(context.getString(R.string.MissionDisengageReason_drone_remote_controller_unavailable_title));
-        }
-
-        if (command instanceof TargetGimbalChannelRemoteControllerCommand) {
-            remoteController.getControllingGimbalIndex(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Integer>() {
-                @Override
-                public void execute(final Integer current) {
-                    final int target = ((TargetGimbalChannelRemoteControllerCommand) command).targetGimbalChannel;
-                    com.dronelink.core.command.Command.conditionallyExecute(target != current, finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
-                        @Override
-                        public void execute() {
-                            remoteController.setControllingGimbalIndex(target, createCompletionCallback(finished));
-                        }
-                    });
-                }
-            }, finished));
-            return null;
-        }
-
-        return new CommandError(context.getString(R.string.MissionDisengageReason_command_type_unhandled));
-    }
+    // TODO: what is the "controlling gimbal index" in the Autel SDK?
+//    private CommandError executeRemoteControllerCommand(final RemoteControllerCommand command, final com.dronelink.core.command.Command.Finisher finished) {
+//        final RemoteController remoteController = DronelinkDJI.getRemoteController(adapter.getDrone(), command.channel);
+//        if (remoteController == null) {
+//            return new CommandError(context.getString(R.string.MissionDisengageReason_drone_remote_controller_unavailable_title));
+//        }
+//
+//        if (command instanceof TargetGimbalChannelRemoteControllerCommand) {
+//            remoteController.getControllingGimbalIndex(createCompletionCallbackWith(new com.dronelink.core.command.Command.FinisherWith<Integer>() {
+//                @Override
+//                public void execute(final Integer current) {
+//                    final int target = ((TargetGimbalChannelRemoteControllerCommand) command).targetGimbalChannel;
+//                    com.dronelink.core.command.Command.conditionallyExecute(target != current, finished, new com.dronelink.core.command.Command.ConditionalExecutor() {
+//                        @Override
+//                        public void execute() {
+//                            remoteController.setControllingGimbalIndex(target, createCompletionCallback(finished));
+//                        }
+//                    });
+//                }
+//            }, finished));
+//            return null;
+//        }
+//
+//        return new CommandError(context.getString(R.string.MissionDisengageReason_command_type_unhandled));
+//    }
 
 //    private CommandError executeCameraCommand(final CameraCommand command, final com.dronelink.core.command.Command.Finisher finished) {
 //        final Camera camera = DronelinkDJI.getCamera(adapter.getDrone(), command.channel);
